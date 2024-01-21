@@ -5,6 +5,9 @@ library(enrichR)
 library(pheatmap)
 library(singleCellNet)
 
+# Primary Author: Yuqi Tan 
+
+#### load in the data #####
 exp_dat = utils_loadObject("../input/TC71_alignment/expDatGood_091319.rda")
 samp_tab = utils_loadObject("../input/TC71_alignment/sampTabGood_091319.rda")
 

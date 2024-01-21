@@ -4,6 +4,7 @@ library(EnhancedVolcano)
 library(fgsea)
 library(singleCellNet)
 
+# Primary Author: Yuqi Tan 
 ##### perform Deseq2 ######
 expDatGood = singleCellNet::utils_loadObject("../input/TC71_alignment/expDatGood_091319.rda")
 sampTabGood = singleCellNet::utils_loadObject("../input/TC71_alignment/sampTabGood_091319.rda")
