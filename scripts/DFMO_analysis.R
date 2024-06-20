@@ -64,6 +64,7 @@ header_tab = header_tab[, c(1, 7)]
 colnames(header_tab) = c("ensembl_id", 'gene_id')
 header_tab$ensembl_id = str_remove_all(header_tab$ensembl_id, ">")
 header_tab$gene_id = str_remove_all(header_tab$gene_id, 'gene_symbol:')
+write.csv(header_tab, "../input/DFMO_control_alignment/header_tab.csv")
 header_tab = header_tab[header_tab$ensembl_id %in% rownames(compiled_df), ]
 rownames(header_tab) = header_tab$ensembl_id
 
