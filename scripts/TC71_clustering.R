@@ -49,6 +49,13 @@ var_genes <- apply(logcounts, 1, var)
 select_var <- names(sort(var_genes, decreasing=TRUE))[1:500]
 # Subset logcounts matrix
 highly_variable_lcpm <- logcounts[select_var,]
-mypalette <- brewer.pal(11,"RdYlBu")
+mypalette <- RColorBrewer::brewer.pal(11,"RdYlBu")
 morecols <- colorRampPalette(mypalette)
-heatmap.2(highly_variable_lcpm,col=rev(morecols(50)),trace="none", main="Top 500 most variable genes across samples",ColSideColors=col.cell,scale="row")
+gplots::heatmap.2(highly_variable_lcpm,col=rev(morecols(50)),trace="none", main="Top 500 most variable genes across samples",ColSideColors=col.cell,scale="row")
+
+png("../output/TC71_analysis/cluster_heatmap.png", width = 6, height = 6, units = "in", res = 600)
+gplots::heatmap.2(highly_variable_lcpm,col=rev(morecols(50)),
+                  trace="none", main="Top 500 most variable genes across samples",ColSideColors=col.cell,scale="row", cexRow = 0.6, 
+                  margins = c(4, 7))
+dev.off()
+

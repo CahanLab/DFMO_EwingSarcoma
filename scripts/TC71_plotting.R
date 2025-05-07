@@ -23,10 +23,10 @@ dds <- DESeqDataSetFromMatrix(countData=exp_dat,
 dds <- DESeq(dds)
 res = results(dds)
 
+raw_res_df = data.frame(res)
 res_df = data.frame(res)
 res_df = res_df[!is.na(res_df$padj), ]
 res_df = res_df[res_df$padj < 0.05, ]
-res_df = res_df[target_genes, ]
 
 gsea_results = read.csv("../output/TC71_analysis/gsea/c2.fgseaRes.csv", row.names = 1)
 
@@ -45,7 +45,7 @@ make_plots_data <- function(gsea_results, dds, pathway_name, save_path) {
   sub_norm_exp = t(scale(t(sub_norm_exp)))
   
   withr::with_dir(file.path(save_path, pathway_name), {
-    png(filename = 'heatmap.png', width = 800, height = 500)
+    png(filename = 'heatmap.png', width = 8000, height = 5000, res = 600)
     pheatmap(sub_norm_exp,
              annotation_col = my_sample_col, 
              legend = TRUE, cluster_cols = FALSE, cluster_rows = TRUE)
@@ -124,3 +124,23 @@ p <- ggplot(plot_df, aes(x=type, y=norm_expression, fill = type)) +
   ggtitle('DECR1') + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ggsave(file.path('../output/TC71_analysis/gsea', pathway_name, paste0("DECR1_exp.png")), plot = p, width = 6, height = 4)
+
+###### remake the manuscript figures ###### 
+pathway_name = 'Supp_figure_S10'
+dir.create(file.path('../output/TC71_analysis/gsea', pathway_name))
+
+norm_exp = counts(dds, normalized = TRUE)
+target_genes = c("DECR1", "GSTM2", 'GSTM3', 'ACSL3', 'PTGS2', 'G6PD')
+for(gene in target_genes) {
+  plot_df = data.frame('norm_expression' = norm_exp[gene, ], 
+                       'type' = samp_tab$description1)
+  p <- ggplot(plot_df, aes(x=type, y=norm_expression, fill = type)) + 
+    geom_violin() + geom_boxplot(width=0.05, fill="white") + theme_bw() + 
+    scale_fill_brewer(palette="Dark2") +
+    xlab("Data Type") + 
+    ylab("Deseq2 Normalized Expression") + 
+    ggtitle(paste0(gene, " p-value: ", round(raw_res_df[gene, 'pvalue'], 2))) + 
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  ggsave(file.path('../output/TC71_analysis/gsea', pathway_name, paste0(gene, "_exp.png")), plot = p, width = 6, height = 4)
+}
+

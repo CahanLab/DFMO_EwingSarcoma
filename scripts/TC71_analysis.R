@@ -33,6 +33,16 @@ res <- results(dds, contrast=c("description1", group1, group2))
 dir.create("../output/TC71_analysis/DE_genes", recursive = TRUE)
 saveRDS(res, file = '../output/TC71_analysis/DE_genes/res.rds')
 
+##### get the sig DE genes #####
+res = readRDS("../output/TC71_analysis/DE_genes/res.rds")
+res_df = as.data.frame(res)
+res_df = res_df[is.na(res_df$padj) == FALSE, ]
+res_df = res_df[res_df$padj < 0.05, ]
+res_df = res_df[order(res_df$padj), ]
+
+write.csv(res_df, file = '../output/TC71_analysis/DE_genes/sig_DE_lung_v_bm.csv')
+write.csv(res_df[1:500, ], file = '../output/TC71_analysis/DE_genes/500_sig_DE_lung_v_bm.csv')
+
 ##### run fgsea #####
 
 fgsea_wrapper <- function(res, rows = 20, rank = "stat", path = "./") {

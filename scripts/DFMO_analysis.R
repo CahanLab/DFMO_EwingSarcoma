@@ -88,9 +88,19 @@ withr::with_dir('../output/DFMO_control_analyis/human_DE_analysis', {
   saveRDS(dds, file = 'human_DESeq2_object.rds')
 })
 
+dds = readRDS('../output/DFMO_control_analyis/human_DE_analysis/human_DESeq2_object.rds')
+header_tab = read.csv("../input/DFMO_control_alignment/header_tab.csv", row.names = 1)
+header_tab = header_tab[header_tab$ensembl_id %in% rownames(compiled_df), ]
+rownames(header_tab) = header_tab$ensembl_id
+
 res <- results(dds)
 res_df = as.data.frame(res)
 res_df = res_df[complete.cases(res_df), ]
+sig_res_df = res_df[res_df$padj < 0.05, ]
+sig_res_df$gene = header_tab[rownames(sig_res_df), 'gene_id']
+sig_res_df = sig_res_df[order(sig_res_df$padj), ]
+write.csv(sig_res_df, file = '../output/DFMO_control_analyis/human_DE_analysis/sig_DE_genes_DFMO.csv')
+write.csv(sig_res_df[1:500, ], file = '../output/DFMO_control_analyis/human_DE_analysis/500_sig_DE_genes_DFMO.csv')
 
 DFMO_up = res_df[res_df$log2FoldChange > 0, ]
 DFMO_up = DFMO_up[DFMO_up$padj < 0.05, ]
@@ -175,6 +185,7 @@ withr::with_dir('../output/DFMO_control_analyis/mouse_DE_analysis', {
   saveRDS(dds, file = 'mouse_DESeq2_object.rds')
 })
 
+##### look at the DE genes results #####
 dds = readRDS("../output/DFMO_control_analyis/mouse_DE_analysis/mouse_DESeq2_object.rds")
 
 res <- results(dds)
