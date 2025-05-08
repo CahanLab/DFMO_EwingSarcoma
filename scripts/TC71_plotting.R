@@ -30,7 +30,7 @@ res_df = res_df[res_df$padj < 0.05, ]
 
 gsea_results = read.csv("../output/TC71_analysis/gsea/c2.fgseaRes.csv", row.names = 1)
 
-make_plots_data <- function(gsea_results, dds, pathway_name, save_path) {
+make_plots_data <- function(gsea_results, dds, pathway_name, save_path, height = 5000, width = 8000) {
   dir.create(file.path(save_path, pathway_name))
   target_genes = gsea_results[gsea_results$pathway == pathway_name, 'leadingEdge']
   
@@ -45,7 +45,7 @@ make_plots_data <- function(gsea_results, dds, pathway_name, save_path) {
   sub_norm_exp = t(scale(t(sub_norm_exp)))
   
   withr::with_dir(file.path(save_path, pathway_name), {
-    png(filename = 'heatmap.png', width = 8000, height = 5000, res = 600)
+    png(filename = 'heatmap.png', width = width, height = height, res = 600)
     pheatmap(sub_norm_exp,
              annotation_col = my_sample_col, 
              legend = TRUE, cluster_cols = FALSE, cluster_rows = TRUE)
@@ -70,10 +70,27 @@ make_plots_data <- function(gsea_results, dds, pathway_name, save_path) {
   
 }
 
-make_plots_data(gsea_results, dds, 'KEGG_PENTOSE_PHOSPHATE_PATHWAY', save_path = "../output/TC71_analysis/gsea")  
-make_plots_data(gsea_results, dds, 'KEGG_GLUTATHIONE_METABOLISM', save_path = "../output/TC71_analysis/gsea")  
-make_plots_data(gsea_results, dds, 'KEGG_FATTY_ACID_METABOLISM', save_path = "../output/TC71_analysis/gsea")  
+make_plots_data(gsea_results, dds, 'KEGG_PENTOSE_PHOSPHATE_PATHWAY', save_path = "../output/TC71_analysis/gsea", width = 3000, height = 2400)  
+make_plots_data(gsea_results, dds, 'KEGG_GLUTATHIONE_METABOLISM', save_path = "../output/TC71_analysis/gsea", width = 3000, height = 3000)  
+make_plots_data(gsea_results, dds, 'KEGG_FATTY_ACID_METABOLISM', save_path = "../output/TC71_analysis/gsea", width = 3000, height = 3000)  
 
+##### make the barplot of the KEGG results ##### 
+kegg_gsea_results = gsea_results[grep('KEGG', gsea_results$pathway), ]
+kegg_gsea_results = kegg_gsea_results[order(kegg_gsea_results$padj), ]
+kegg_gsea_results = kegg_gsea_results[kegg_gsea_results$NES < 0 , ] # select the pathway enriched in the BM 
+kegg_gsea_results = kegg_gsea_results[1:12, ]
+kegg_gsea_results$pathway = sub("^KEGG_", "", kegg_gsea_results$pathway)
+kegg_gsea_results$log_padj = -log(kegg_gsea_results$padj)
+
+p<-ggplot(data=kegg_gsea_results, aes(x=reorder(pathway, log_padj), y=log_padj)) +
+  geom_bar(stat="identity") + 
+  ylab("-log adj-p") +
+  xlab("Terms")+
+  ggtitle('KEGG: Enriched in bone marrow') + 
+  theme_bw() +
+  theme(text = element_text(size = 18)) +
+  coord_flip()
+ggsave(filename = "../output/TC71_analysis/gsea/KEGG_bar.png", plot = p, width = 12, height = 8)
 ##### make individual plots for ACSL3 and PTGS2 #####
 pathway_name = 'ACSL3_PTGS2'
 dir.create(file.path('../output/TC71_analysis/gsea', pathway_name))
@@ -138,7 +155,7 @@ for(gene in target_genes) {
     geom_violin() + geom_boxplot(width=0.05, fill="white") + theme_bw() + 
     scale_fill_brewer(palette="Dark2") +
     xlab("Data Type") + 
-    ylab("Deseq2 Normalized Expression") + 
+    ylab("Normalized read counts") + 
     ggtitle(paste0(gene, " p-value: ", round(raw_res_df[gene, 'pvalue'], 2))) + 
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
   ggsave(file.path('../output/TC71_analysis/gsea', pathway_name, paste0(gene, "_exp.png")), plot = p, width = 6, height = 4)

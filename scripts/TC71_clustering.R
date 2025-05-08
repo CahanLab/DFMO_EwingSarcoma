@@ -47,6 +47,10 @@ title("multidimensional scaling plot")
 #estimate variable genes
 var_genes <- apply(logcounts, 1, var)
 select_var <- names(sort(var_genes, decreasing=TRUE))[1:500]
+select_var = sort(select_var)
+selected_var_df = data.frame(top_var_genes = select_var)
+write.csv(selected_var_df, file = '../output/TC71_analysis/top_variable_genes.csv', row.names = FALSE)
+
 # Subset logcounts matrix
 highly_variable_lcpm <- logcounts[select_var,]
 mypalette <- RColorBrewer::brewer.pal(11,"RdYlBu")
